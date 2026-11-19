@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { API_URL } from '../config';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { API_URL } from "../config";
 
 /**
  * Hook personalizado useApi (Módulo Esther Daza)
@@ -40,28 +40,30 @@ export default function useApi(endpoint, options = {}) {
       }
 
       // Construir la URL completa
-      let url = endpoint.startsWith('http') ? endpoint : `${API_URL}${endpoint}`;
+      let url = endpoint.startsWith("http")
+        ? endpoint
+        : `${API_URL}${endpoint}`;
 
       // Si se envían params como objeto, concatenarlos como query string
       const currentOptions = optionsRef.current || {};
-      if (currentOptions.params && typeof currentOptions.params === 'object') {
+      if (currentOptions.params && typeof currentOptions.params === "object") {
         const queryParams = new URLSearchParams();
         Object.entries(currentOptions.params).forEach(([key, val]) => {
-          if (val !== undefined && val !== null && val !== '') {
+          if (val !== undefined && val !== null && val !== "") {
             queryParams.append(key, String(val));
           }
         });
         const queryString = queryParams.toString();
         if (queryString) {
-          url += (url.includes('?') ? '&' : '?') + queryString;
+          url += (url.includes("?") ? "&" : "?") + queryString;
         }
       }
 
       const response = await fetch(url, {
-        method: 'GET',
+        method: "GET",
         signal: controller.signal,
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
           ...currentOptions.headers,
         },
       });
@@ -81,10 +83,10 @@ export default function useApi(endpoint, options = {}) {
       }
     } catch (err) {
       // Ignorar errores provocados por la cancelación voluntaria
-      if (err.name === 'AbortError') return;
+      if (err.name === "AbortError") return;
 
       if (isMountedRef.current) {
-        setError(err.message || 'Error de conexión con el servidor');
+        setError(err.message || "Error de conexión con el servidor");
       }
     } finally {
       if (isMountedRef.current) {

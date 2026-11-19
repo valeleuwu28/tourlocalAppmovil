@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { API_URL } from '../../config';
 import { getSession } from '../../utils/storage';
 import useApi from '../../hooks/useApi';
@@ -21,9 +22,20 @@ import useApi from '../../hooks/useApi';
  * Muestra el detalle completo de un destino turístico consumiendo GET /api/destinos/:id.
  * Permite guardar en favoritos y navegar hacia el agendamiento de fecha y horario (Módulo Naomi).
  */
-export default function PlaceDetailScreen({ route, navigation }) {
-  const initialDestino = route?.params?.destino || null;
-  const destinoId = route?.params?.id || initialDestino?.id;
+export default function PlaceDetailScreen({ navigation }) {
+  const router = useRouter();
+  const params = useLocalSearchParams();
+  const serializedDestino =
+    typeof params.destino === 'string' ? params.destino : null;
+  let initialDestino = null;
+  if (serializedDestino) {
+    try {
+      initialDestino = JSON.parse(serializedDestino);
+    } catch {
+      initialDestino = null;
+    }
+  }
+  const destinoId = params.id || initialDestino?.id;
 
   // Consultar información actualizada desde la API
   const { data: apiDestino, loading, error, refetch } = useApi(
@@ -173,7 +185,7 @@ export default function PlaceDetailScreen({ route, navigation }) {
           <SafeAreaView style={styles.floatingNav}>
             <TouchableOpacity
               style={styles.circleButton}
-              onPress={() => navigation?.goBack()}
+              onPress={() => router.back()}
               activeOpacity={0.8}
             >
               <Ionicons name="arrow-back" size={20} color="#0F172A" />

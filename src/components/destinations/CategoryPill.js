@@ -1,5 +1,4 @@
-import React from 'react';
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
 /**
  * Componente CategoryPill (Módulo Esther Daza)
@@ -38,17 +37,17 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     marginRight: 8,
     borderWidth: 1.2,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   pillUnselected: {
-    backgroundColor: '#F8FAFC',
-    borderColor: '#E2E8F0',
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
   },
   pillSelected: {
-    backgroundColor: '#0F766E', // Verde esmeralda moderno TourLocal
-    borderColor: '#0F766E',
-    shadowColor: '#0F766E',
+    backgroundColor: "#0F766E", // Verde esmeralda moderno TourLocal
+    borderColor: "#0F766E",
+    shadowColor: "#0F766E",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3,
@@ -56,13 +55,13 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 13,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   textUnselected: {
-    color: '#64748B',
+    color: "#64748B",
   },
   textSelected: {
-    color: '#FFFFFF',
-    fontWeight: '700',
+    color: "#FFFFFF",
+    fontWeight: "700",
   },
 });

@@ -1,6 +1,5 @@
-import React from 'react';
-import AppNavigator from '../navigation/AppNavigator';
+import SplashScreen from "../screens/SplashScreen";
 
-export default function HomeScreen() {
-  return <AppNavigator />;
+export default function IndexRoute() {
+  return <SplashScreen />;
 }

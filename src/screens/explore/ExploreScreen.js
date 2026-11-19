@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 import useApi from '../../hooks/useApi';
 import CategoryPill from '../../components/destinations/CategoryPill';
 import DestinoCard from '../../components/destinations/DestinoCard';
@@ -32,7 +33,8 @@ const CATEGORIES = [
  * Muestra el catálogo de destinos turísticos obtenidos en tiempo real de la API REST / SQLite.
  * Incluye encabezado, buscador en vivo, filtros por categorías, estados de carga y error.
  */
-export default function ExploreScreen({ navigation }) {
+export default function ExploreScreen() {
+  const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
@@ -75,12 +77,13 @@ export default function ExploreScreen({ navigation }) {
   }, [destinos, searchQuery]);
 
   const handleCardPress = (destino) => {
-    if (navigation && navigation.navigate) {
-      navigation.navigate('PlaceDetail', {
-        id: destino.id,
-        destino,
-      });
-    }
+    router.push({
+      pathname: '/place-detail',
+      params: {
+        id: String(destino.id),
+        destino: JSON.stringify(destino),
+      },
+    });
   };
 
   return (
@@ -95,7 +98,7 @@ export default function ExploreScreen({ navigation }) {
         </View>
         <TouchableOpacity
           style={styles.headerAvatar}
-          onPress={() => navigation?.navigate?.('Perfil')}
+          onPress={() => router.navigate('/(tabs)/profile')}
         >
           <Ionicons name="person-circle-outline" size={36} color="#0F766E" />
         </TouchableOpacity>
