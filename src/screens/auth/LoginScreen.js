@@ -42,12 +42,15 @@ export default function LoginScreen() {
 
       if (response.ok) {
         try {
-          await saveSession(data);
+          const authData = data.data || data;
+          const user = authData.user || authData.usuario || authData;
+          const token = authData.token || authData.accessToken;
+          await saveSession(user, token);
         } catch {
           setError("No se pudo guardar la sesión en este dispositivo.");
           return;
         }
-        router.replace("/home");
+        router.replace("/(tabs)/explore");
       } else {
         setError(data.error || "Correo o contraseña incorrectos.");
       }

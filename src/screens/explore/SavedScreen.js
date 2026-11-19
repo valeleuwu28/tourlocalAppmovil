@@ -13,7 +13,7 @@ import {
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { API_URL } from '../../config';
 import { getSession } from '../../utils/storage';
 
@@ -22,7 +22,8 @@ import { getSession } from '../../utils/storage';
  * Permite a los usuarios consultar y gestionar su lista de destinos turísticos favoritos.
  * Consume GET /api/guardados y DELETE /api/guardados/:id mediante el header X-User-Id.
  */
-export default function SavedScreen({ navigation }) {
+export default function SavedScreen() {
+  const router = useRouter();
   const [savedPlaces, setSavedPlaces] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -103,19 +104,22 @@ export default function SavedScreen({ navigation }) {
   };
 
   const handleItemPress = (item) => {
-    if (navigation && navigation.navigate) {
-      navigation.navigate('PlaceDetail', {
-        id: item.id,
-        destino: {
-          id: item.id,
-          title: item.nombre || item.title,
-          location: item.ubicacion || item.location,
-          image: item.imagen || item.image,
-          rating: item.calificacion || item.rating,
-          reviews: item.resenas || item.reviews,
-        },
-      });
-    }
+    const destino = {
+      id: item.id,
+      title: item.nombre || item.title,
+      location: item.ubicacion || item.location,
+      image: item.imagen || item.image,
+      rating: item.calificacion || item.rating,
+      reviews: item.resenas || item.reviews,
+    };
+
+    router.push({
+      pathname: '/place-detail',
+      params: {
+        id: String(item.id),
+        destino: JSON.stringify(destino),
+      },
+    });
   };
 
   return (
@@ -216,7 +220,7 @@ export default function SavedScreen({ navigation }) {
               </Text>
               <TouchableOpacity
                 style={styles.exploreBtn}
-                onPress={() => navigation?.navigate?.('Explorar')}
+                onPress={() => router.navigate('/(tabs)/explore')}
                 activeOpacity={0.85}
               >
                 <Text style={styles.exploreBtnText}>Explorar destinos</Text>

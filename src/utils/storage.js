@@ -7,13 +7,11 @@ const TOKEN_KEY = "@tourlocal_token";
  * Guarda los datos del usuario y el token de autenticación en AsyncStorage
  */
 export const saveSession = async (user, token) => {
-  try {
-    await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
-    if (token) {
-      await AsyncStorage.setItem(TOKEN_KEY, token);
-    }
-  } catch (error) {
-    console.error("Error al guardar sesión en AsyncStorage:", error);
+  await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
+  if (token) {
+    await AsyncStorage.setItem(TOKEN_KEY, String(token));
+  } else {
+    await AsyncStorage.removeItem(TOKEN_KEY);
   }
 };
 

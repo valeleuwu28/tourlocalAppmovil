@@ -1,3 +1,5 @@
-import ProfileScreen from "../screens/profile/ProfileScreen";
+import { Redirect } from "expo-router";
 
-export default ProfileScreen;
+export default function HomeRoute() {
+  return <Redirect href="/(tabs)/explore" />;
+}
