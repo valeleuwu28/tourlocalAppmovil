@@ -1,72 +1,67 @@
-import { Pressable, StyleSheet, Text } from "react-native";
-import { colors } from "../../theme/colors";
+import { StyleSheet, Text, TouchableOpacity } from "react-native";
 
-export default function CategoryPill({
-  label,
-  active = false,
-  onPress,
-  icon,
-  count,
-}) {
+/**
+ * Componente CategoryPill (Módulo Esther Daza)
+ * Botón tipo píldora para el filtrado de categorías de destinos.
+ *
+ * @param {string} label - Texto de la categoría (ej: "Todos", "Parques", etc.)
+ * @param {boolean} selected - Indica si la categoría está activa
+ * @param {Function} onPress - Función que se ejecuta al seleccionar
+ */
+export default function CategoryPill({ label, selected = false, onPress }) {
   return (
-    <Pressable
-      style={[styles.pill, active ? styles.active : styles.inactive]}
+    <TouchableOpacity
+      activeOpacity={0.75}
+      style={[
+        styles.pill,
+        selected ? styles.pillSelected : styles.pillUnselected,
+      ]}
       onPress={onPress}
     >
-      {icon && <Text style={styles.icon}>{icon}</Text>}
       <Text
-        style={[styles.label, active ? styles.textActive : styles.textInactive]}
+        style={[
+          styles.text,
+          selected ? styles.textSelected : styles.textUnselected,
+        ]}
       >
         {label}
       </Text>
-      {count != null && (
-        <Text
-          style={[
-            styles.count,
-            active ? styles.countActive : styles.countInactive,
-          ]}
-        >
-          {count}
-        </Text>
-      )}
-    </Pressable>
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   pill: {
-    flexDirection: "row",
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 24,
+    marginRight: 8,
+    borderWidth: 1.2,
     alignItems: "center",
     justifyContent: "center",
-    height: 36,
-    paddingHorizontal: 16,
-    borderRadius: 18,
-    gap: 6,
   },
-  active: {
-    backgroundColor: colors.primary,
-    borderWidth: 1,
-    borderColor: colors.primary,
+  pillUnselected: {
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
   },
-  inactive: {
-    backgroundColor: colors.infoBg,
-    borderWidth: 1,
-    borderColor: colors.primary,
+  pillSelected: {
+    backgroundColor: "#0F766E", // Verde esmeralda moderno TourLocal
+    borderColor: "#0F766E",
+    shadowColor: "#0F766E",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 3,
   },
-  label: { fontSize: 14, fontWeight: "500" },
-  textActive: { color: colors.surface, fontWeight: "600" },
-  textInactive: { color: colors.primary },
-  icon: { fontSize: 14 },
-  count: {
-    fontSize: 12,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 10,
-    overflow: "hidden",
+  text: {
+    fontSize: 13,
+    fontWeight: "600",
   },
-  countActive: {
-    backgroundColor: "rgba(255,255,255,0.2)",
-    color: colors.surface,
+  textUnselected: {
+    color: "#64748B",
   },
-  countInactive: { backgroundColor: "rgba(0,0,0,0.08)", color: colors.primary },
+  textSelected: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+  },
 });
