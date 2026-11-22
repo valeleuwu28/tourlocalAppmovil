@@ -23,6 +23,15 @@ export default function MainTabsLayout() {
         <NativeTabs.Trigger.Label>Guardados</NativeTabs.Trigger.Label>
       </NativeTabs.Trigger>
 
+      <NativeTabs.Trigger name="history">
+        <NativeTabs.Trigger.Icon
+          sf={{ default: "clock", selected: "clock.fill" }}
+          md="history"
+        />
+        <NativeTabs.Trigger.Label>Historial</NativeTabs.Trigger.Label>
+      </NativeTabs.Trigger>
+
+
       <NativeTabs.Trigger name="profile">
         <NativeTabs.Trigger.Icon
           sf={{ default: "person.crop.circle", selected: "person.crop.circle.fill" }}
