@@ -116,15 +116,15 @@ export default function PlaceDetailScreen({ navigation }) {
   };
 
   const handleAgendar = () => {
-    if (!destino) return;
-    // Contrato con el módulo de Naomi (ScheduleScreen)
-    if (navigation && navigation.navigate) {
-      navigation.navigate('Schedule', {
-        destinoId: destino.id,
-        destino,
-      });
-    }
-  };
+  if (!destino) return;
+
+  router.push({
+    pathname: "/schedule",
+    params: {
+      id: String(destino.id),
+    },
+  });
+};
 
   if (loading && !destino) {
     return (
