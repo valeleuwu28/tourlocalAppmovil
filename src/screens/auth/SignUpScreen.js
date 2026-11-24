@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import InputField from "../../components/common/InputField";
-import { API_URL } from "../../config";
+import { getApiBaseUrlAsync } from "../../config";
 
 export default function SignUpScreen() {
   const router = useRouter();
@@ -22,18 +22,23 @@ export default function SignUpScreen() {
       setError("Las contraseñas no coinciden.");
       return;
     }
-    if (!API_URL) {
-      setError("Configura EXPO_PUBLIC_API_URL con la dirección de tu servidor.");
-      return;
-    }
-
     setError("");
     setLoading(true);
+    let timeoutId;
+    let timedOut = false;
 
     try {
-      const response = await fetch(`${API_URL}/api/users/register`, {
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, 15000);
+      const baseUrl = await getApiBaseUrlAsync();
+
+      const response = await fetch(`${baseUrl}/api/users/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           nombre,
           email,
@@ -58,8 +63,13 @@ export default function SignUpScreen() {
         setError(data.error || "Error al registrarse.");
       }
     } catch {
-      setError("No se pudo conectar con el servidor.");
+      setError(
+        timedOut
+          ? "El servidor no respondió. Verifica la IP y que el servidor esté encendido."
+          : "No se pudo conectar con el servidor. Verifica la IP y que esté encendido.",
+      );
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setLoading(false);
     }
   };

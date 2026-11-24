@@ -1,26 +1,37 @@
-
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 export default function SlotCard({ horario, selected, onPress }) {
+  const isPassed = Boolean(horario.isPassed);
   const sinCupos =
-    horario.status === "Sin cupos" || horario.remaining === 0;
+    !isPassed && (horario.status === "Sin cupos" || horario.remaining === 0);
+  const isDisabled = isPassed || sinCupos;
+
+  const statusLabel = isPassed
+    ? "Horario pasado"
+    : horario.status;
+
+  const dotColor = isPassed
+    ? "#94A3B8"
+    : sinCupos
+      ? "#F87171"
+      : "#0D9488";
 
   return (
     <Pressable
       onPress={onPress}
-      disabled={sinCupos}
+      disabled={isDisabled}
       style={[
         styles.card,
         selected && styles.selected,
-        sinCupos && styles.disabled,
+        isDisabled && styles.disabled,
       ]}
     >
-      <Text style={[styles.time, sinCupos && styles.muted]}>
+      <Text style={[styles.time, isDisabled && styles.muted]}>
         {horario.time}
       </Text>
 
-      <Text style={[styles.period, sinCupos && styles.muted]}>
+      <Text style={[styles.period, isDisabled && styles.muted]}>
         {horario.period}
       </Text>
 
@@ -28,12 +39,12 @@ export default function SlotCard({ horario, selected, onPress }) {
         <View
           style={[
             styles.dot,
-            { backgroundColor: sinCupos ? "#94A3B8" : "#0D9488" },
+            { backgroundColor: dotColor },
           ]}
         />
 
-        <Text style={[styles.status, sinCupos && styles.muted]}>
-          {horario.status}
+        <Text style={[styles.status, isDisabled && styles.muted]}>
+          {statusLabel}
         </Text>
       </View>
     </Pressable>
@@ -56,8 +67,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#F0FDFA",
   },
   disabled: {
-    backgroundColor: "#F1F5F9",
-    opacity: 0.65,
+    backgroundColor: "#F8FAFC",
+    borderColor: "#E2E8F0",
+    opacity: 0.6,
   },
   time: {
     fontSize: 18,
@@ -72,18 +84,18 @@ const styles = StyleSheet.create({
   statusRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginTop: 12,
+    marginTop: 10,
   },
   dot: {
-    width: 7,
-    height: 7,
+    width: 8,
+    height: 8,
     borderRadius: 4,
     marginRight: 6,
   },
   status: {
-    fontSize: 11,
-    fontWeight: "600",
+    fontSize: 12,
     color: "#0F766E",
+    fontWeight: "500",
   },
   muted: {
     color: "#94A3B8",

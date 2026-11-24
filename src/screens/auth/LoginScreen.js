@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import InputField from "../../components/common/InputField";
-import { API_URL } from "../../config";
+import { getApiBaseUrlAsync } from "../../config";
 import { saveSession } from "../../utils/storage";
 
 export default function LoginScreen() {
@@ -17,18 +17,23 @@ export default function LoginScreen() {
       setError("Por favor, completa todos los campos.");
       return;
     }
-    if (!API_URL) {
-      setError("Configura EXPO_PUBLIC_API_URL con la dirección de tu servidor.");
-      return;
-    }
-
     setError("");
     setLoading(true);
+    let timeoutId;
+    let timedOut = false;
 
     try {
-      const response = await fetch(`${API_URL}/api/users/login`, {
+      const controller = new AbortController();
+      timeoutId = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, 15000);
+      const baseUrl = await getApiBaseUrlAsync();
+
+      const response = await fetch(`${baseUrl}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({ email, password }),
       });
 
@@ -55,8 +60,13 @@ export default function LoginScreen() {
         setError(data.error || "Correo o contraseña incorrectos.");
       }
     } catch {
-      setError("No se pudo conectar con el servidor. ¿Está encendido?");
+      setError(
+        timedOut
+          ? "El servidor no respondió. Verifica la IP y que el servidor esté encendido."
+          : "No se pudo conectar con el servidor. ¿Está encendido?",
+      );
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setLoading(false);
     }
   };

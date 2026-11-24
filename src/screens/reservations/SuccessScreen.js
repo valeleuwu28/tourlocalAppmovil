@@ -5,7 +5,7 @@ import Button from "../../components/common/Button";
 import DetailRow from "../../components/common/DetailRow";
 import { colors } from "../../theme/colors";
 
-export default function SuccessScreen({ route }) {
+export default function SuccessScreen({ navigation, route }) {
   const router = useRouter();
   const routerParams = useLocalSearchParams();
   const params = route?.params || routerParams || {};
@@ -16,6 +16,22 @@ export default function SuccessScreen({ route }) {
   const horario = params.horario || "-";
   const participantes = params.participantes || "1";
   const total = params.total || "0";
+
+  const handleGoToHistory = () => {
+    if (navigation && typeof navigation.navigate === "function") {
+      navigation.navigate("Home", { screen: "Historial" });
+    } else {
+      router.replace("/(tabs)/history");
+    }
+  };
+
+  const handleGoToExplore = () => {
+    if (navigation && typeof navigation.navigate === "function") {
+      navigation.navigate("Home", { screen: "Explorar" });
+    } else {
+      router.replace("/(tabs)/explore");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -42,13 +58,13 @@ export default function SuccessScreen({ route }) {
           <DetailRow label="Total" value={`Bs ${total}`} />
         </View>
 
-        <Button onPress={() => router.replace("/(tabs)/history")}>
+        <Button onPress={handleGoToHistory}>
           Ver mis reservas
         </Button>
 
         <Button
           variant="secondary"
-          onPress={() => router.replace("/(tabs)/explore")}
+          onPress={handleGoToExplore}
           style={{ marginTop: 12 }}
         >
           Volver a explorar

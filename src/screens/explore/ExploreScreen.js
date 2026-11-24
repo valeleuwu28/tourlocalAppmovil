@@ -1,7 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  Alert,
   FlatList,
+  Modal,
   RefreshControl,
   SafeAreaView,
   ScrollView,
@@ -17,6 +19,7 @@ import { useRouter } from 'expo-router';
 import useApi from '../../hooks/useApi';
 import CategoryPill from '../../components/destinations/CategoryPill';
 import DestinoCard from '../../components/destinations/DestinoCard';
+import { getCurrentIp, setCustomIp, resetToDefaultIp, DEFAULT_LOCAL_IP } from '../../config';
 
 const CATEGORIES = [
   'Todos',
@@ -33,11 +36,30 @@ const CATEGORIES = [
  * Muestra el catálogo de destinos turísticos obtenidos en tiempo real de la API REST / SQLite.
  * Incluye encabezado, buscador en vivo, filtros por categorías, estados de carga y error.
  */
-export default function ExploreScreen() {
+export default function ExploreScreen({ navigation }) {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const [showIpModal, setShowIpModal] = useState(false);
+  const [tempIp, setTempIp] = useState(getCurrentIp());
+
+  const handleSaveIp = async () => {
+    if (!tempIp.trim()) {
+      Alert.alert('IP requerida', 'Por favor ingresa la IP de tu laptop.');
+      return;
+    }
+    await setCustomIp(tempIp.trim());
+    setShowIpModal(false);
+    refetch();
+  };
+
+  const handleResetIp = async () => {
+    await resetToDefaultIp();
+    setTempIp(DEFAULT_LOCAL_IP);
+    setShowIpModal(false);
+    refetch();
+  };
 
   // Endpoint reactivo según la categoría seleccionada
   const endpoint = useMemo(() => {
@@ -77,13 +99,20 @@ export default function ExploreScreen() {
   }, [destinos, searchQuery]);
 
   const handleCardPress = (destino) => {
-    router.push({
-      pathname: '/place-detail',
-      params: {
+    if (navigation && typeof navigation.navigate === 'function') {
+      navigation.navigate('PlaceDetail', {
         id: String(destino.id),
         destino: JSON.stringify(destino),
-      },
-    });
+      });
+    } else {
+      router.push({
+        pathname: '/place-detail',
+        params: {
+          id: String(destino.id),
+          destino: JSON.stringify(destino),
+        },
+      });
+    }
   };
 
   return (
@@ -96,12 +125,23 @@ export default function ExploreScreen() {
           <Text style={styles.subtitle}>¡Bienvenida de nuevo! 👋</Text>
           <Text style={styles.title}>Explora nuevos lugares</Text>
         </View>
-        <TouchableOpacity
-          style={styles.headerAvatar}
-          onPress={() => router.navigate('/(tabs)/profile')}
-        >
-          <Ionicons name="person-circle-outline" size={36} color="#0F766E" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <TouchableOpacity
+            style={styles.headerIconBtn}
+            onPress={() => {
+              setTempIp(getCurrentIp());
+              setShowIpModal(true);
+            }}
+          >
+            <Ionicons name="settings-outline" size={24} color="#64748B" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.headerAvatar}
+            onPress={() => router.navigate('/(tabs)/profile')}
+          >
+            <Ionicons name="person-circle-outline" size={36} color="#0F766E" />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* 2. Buscador de Destinos */}
@@ -157,6 +197,18 @@ export default function ExploreScreen() {
             <Ionicons name="reload" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
             <Text style={styles.retryButtonText}>Reintentar</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.changeIpBtnSecondary}
+            onPress={() => {
+              setTempIp(getCurrentIp());
+              setShowIpModal(true);
+            }}
+          >
+            <Ionicons name="settings-outline" size={16} color="#0F766E" style={{ marginRight: 6 }} />
+            <Text style={styles.changeIpBtnSecondaryText}>
+              Cambiar IP ({getCurrentIp()})
+            </Text>
+          </TouchableOpacity>
         </View>
       ) : (
         <FlatList
@@ -190,6 +242,60 @@ export default function ExploreScreen() {
           }
         />
       )}
+
+      {/* Modal interactivo para configurar la IP de la laptop */}
+      <Modal
+        visible={showIpModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowIpModal(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalCard}>
+            <View style={styles.modalHeader}>
+              <Ionicons name="hardware-chip-outline" size={24} color="#0F766E" />
+              <Text style={styles.modalTitle}>Configurar IP del Servidor</Text>
+            </View>
+            <Text style={styles.modalDesc}>
+              Escribe la dirección IPv4 de tu laptop según &apos;ipconfig&apos; (ej. 172.18.28.183 o la que te dé tu Wi-Fi / Hotspot):
+            </Text>
+
+            <TextInput
+              style={styles.modalInput}
+              value={tempIp}
+              onChangeText={setTempIp}
+              placeholder="Ej: 172.18.28.183"
+              placeholderTextColor="#94A3B8"
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={styles.saveIpBtn}
+                onPress={handleSaveIp}
+              >
+                <Ionicons name="checkmark-circle" size={16} color="#FFFFFF" style={{ marginRight: 6 }} />
+                <Text style={styles.saveIpBtnText}>Guardar y Conectar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.resetIpBtn}
+                onPress={handleResetIp}
+              >
+                <Text style={styles.resetIpBtnText}>Restablecer predeterminada</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.cancelIpBtn}
+                onPress={() => setShowIpModal(false)}
+              >
+                <Text style={styles.cancelIpBtnText}>Cerrar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -296,6 +402,112 @@ const styles = StyleSheet.create({
     color: '#FFFFFF',
     fontSize: 14,
     fontWeight: '700',
+  },
+  headerIconBtn: {
+    padding: 6,
+    borderRadius: 20,
+    backgroundColor: '#F1F5F9',
+  },
+  changeIpBtnSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FDFA',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#0F766E',
+  },
+  changeIpBtnSecondaryText: {
+    color: '#0F766E',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 360,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 20,
+    padding: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    elevation: 8,
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#0F172A',
+  },
+  modalDesc: {
+    fontSize: 13,
+    color: '#64748B',
+    lineHeight: 18,
+    marginBottom: 14,
+  },
+  modalInput: {
+    backgroundColor: '#F8FAFC',
+    borderWidth: 1.5,
+    borderColor: '#CBD5E1',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0F172A',
+    marginBottom: 16,
+  },
+  modalButtons: {
+    gap: 8,
+  },
+  saveIpBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#0F766E',
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
+  saveIpBtnText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '700',
+  },
+  resetIpBtn: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#F1F5F9',
+    paddingVertical: 10,
+    borderRadius: 12,
+  },
+  resetIpBtnText: {
+    color: '#475569',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  cancelIpBtn: {
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  cancelIpBtnText: {
+    color: '#94A3B8',
+    fontSize: 13,
+    fontWeight: '600',
   },
   emptyContainer: {
     alignItems: 'center',

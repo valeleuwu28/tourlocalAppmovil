@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { API_URL } from "../config";
+import { getApiBaseUrlAsync, API_URL } from "../config";
 
 /**
  * Hook personalizado useApi (Módulo Esther Daza)
@@ -37,6 +37,8 @@ export default function useApi(endpoint, options = {}) {
     }
     const controller = new AbortController();
     abortControllerRef.current = controller;
+    let timeoutId;
+    let timedOut = false;
 
     try {
       if (isMountedRef.current) {
@@ -44,10 +46,15 @@ export default function useApi(endpoint, options = {}) {
         setError(null);
       }
 
-      // Construir la URL completa
+      // Construir la URL completa con la IP dinámica resuelta
+      timeoutId = setTimeout(() => {
+        timedOut = true;
+        controller.abort();
+      }, 15000);
+      const baseUrl = (await getApiBaseUrlAsync()) || API_URL;
       let url = endpoint.startsWith("http")
         ? endpoint
-        : `${API_URL}${endpoint}`;
+        : `${baseUrl}${endpoint}`;
 
       // Si se envían params como objeto, concatenarlos como query string
       const currentOptions = optionsRef.current || {};
@@ -91,15 +98,20 @@ export default function useApi(endpoint, options = {}) {
       }
     } catch (err) {
       // Ignorar errores provocados por la cancelación voluntaria
-      if (err.name === "AbortError") return;
+      if (err.name === "AbortError" && !timedOut) return;
 
       if (
         isMountedRef.current &&
         abortControllerRef.current === controller
       ) {
-        setError(err.message || "Error de conexión con el servidor");
+        setError(
+          timedOut
+            ? "El servidor no respondió a tiempo. Verifica la IP y que esté encendido."
+            : err.message || "Error de conexión con el servidor",
+        );
       }
     } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       if (
         isMountedRef.current &&
         abortControllerRef.current === controller

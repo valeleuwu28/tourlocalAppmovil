@@ -15,6 +15,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 
 import useApi from "../../hooks/useApi";
 import SlotCard from "../../components/experiences/SlotCard";
+import { isSlotPassed } from "../../utils/dateUtils";
 
 // Convertir la fecha a YYYY-MM-DD
 function formatearFecha(fecha) {
@@ -35,9 +36,10 @@ function obtenerProximosDias() {
   });
 }
 
-export default function ScheduleScreen() {
+export default function ScheduleScreen({ navigation, route }) {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const searchParams = useLocalSearchParams();
+  const id = searchParams?.id || route?.params?.id || route?.params?.destinoId;
 
   // Estados de nuestra pantalla
   const [fecha, setFecha] = useState(new Date());
@@ -91,25 +93,38 @@ export default function ScheduleScreen() {
     if (
       !id ||
       !horarioSeleccionado ||
+      isSlotPassed(fecha, horarioSeleccionado.time) ||
       loading ||
       error
     ) {
       return;
     }
 
-    router.push({
-      pathname: "/confirm-reservation",
-      params: {
+    if (navigation && typeof navigation.navigate === 'function') {
+      navigation.navigate("ConfirmReservation", {
         destinoId: String(id),
         fecha: fechaElegida,
         horario: horarioSeleccionado.time,
-      },
-    });
+      });
+    } else {
+      router.push({
+        pathname: "/confirm-reservation",
+        params: {
+          destinoId: String(id),
+          fecha: fechaElegida,
+          horario: horarioSeleccionado.time,
+        },
+      });
+    }
   };
+
+  const horarioValido =
+    horarioSeleccionado &&
+    !isSlotPassed(fecha, horarioSeleccionado.time);
 
   const puedeContinuar =
     !!id &&
-    !!horarioSeleccionado &&
+    !!horarioValido &&
     !loading &&
     !error;
 
@@ -279,18 +294,24 @@ export default function ScheduleScreen() {
         {!loading && !error && (
           <View style={styles.slotsContainer}>
             {horarios.length > 0 ? (
-              horarios.map((horario) => (
-                <SlotCard
-                  key={horario.id}
-                  horario={horario}
-                  selected={
-                    horarioSeleccionado?.id === horario.id
-                  }
-                  onPress={() =>
-                    setHorarioSeleccionado(horario)
-                  }
-                />
-              ))
+              horarios.map((horario) => {
+                const isPassed = isSlotPassed(fecha, horario.time);
+                const enrichedHorario = { ...horario, isPassed };
+                return (
+                  <SlotCard
+                    key={horario.id}
+                    horario={enrichedHorario}
+                    selected={
+                      !isPassed && horarioSeleccionado?.id === horario.id
+                    }
+                    onPress={() => {
+                      if (!isPassed) {
+                        setHorarioSeleccionado(horario);
+                      }
+                    }}
+                  />
+                );
+              })
             ) : (
               <Text style={styles.messageText}>
                 No se encontraron horarios.
