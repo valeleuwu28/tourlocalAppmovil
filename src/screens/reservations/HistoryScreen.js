@@ -16,6 +16,7 @@ import ReservationCard from "../../components/reservations/ReservationCard";
 import { API_URL } from "../../config";
 import { colors } from "../../theme/colors";
 import { getSession } from "../../utils/storage";
+import { isTourPast } from "../../utils/dateUtils";
 
 export default function HistoryScreen() {
   const router = useRouter();
@@ -68,6 +69,14 @@ export default function HistoryScreen() {
   };
 
   const handleCancelReservation = (reserva) => {
+    if (isTourPast(reserva.fecha, reserva.horario)) {
+      Alert.alert(
+        "No se puede cancelar",
+        "Este tour ya comenzó o su fecha ya pasó, por lo que no es posible cancelarlo."
+      );
+      return;
+    }
+
     Alert.alert(
       "Cancelar reserva",
       `¿Seguro que deseas cancelar "${reserva.experiencia}"?`,

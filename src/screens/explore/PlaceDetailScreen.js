@@ -16,6 +16,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { API_URL } from '../../config';
 import { getSession } from '../../utils/storage';
 import useApi from '../../hooks/useApi';
+import DestinationMapCard from '../../components/destinations/DestinationMapCard';
 
 /**
  * Pantalla PlaceDetailScreen (Módulo Esther Daza)
@@ -116,15 +117,22 @@ export default function PlaceDetailScreen({ navigation }) {
   };
 
   const handleAgendar = () => {
-  if (!destino) return;
+    if (!destino) return;
 
-  router.push({
-    pathname: "/schedule",
-    params: {
-      id: String(destino.id),
-    },
-  });
-};
+    if (navigation && typeof navigation.navigate === 'function') {
+      navigation.navigate('Schedule', {
+        id: String(destino.id),
+        destinoId: String(destino.id),
+      });
+    } else {
+      router.push({
+        pathname: '/schedule',
+        params: {
+          id: String(destino.id),
+        },
+      });
+    }
+  };
 
   if (loading && !destino) {
     return (
@@ -297,6 +305,9 @@ export default function PlaceDetailScreen({ navigation }) {
               ) : null}
             </View>
           ) : null}
+
+          {/* Funcionalidad Especial: Ubicación en el Mapa con GPS y Google Maps */}
+          <DestinationMapCard destino={destino} />
         </View>
       </ScrollView>
 

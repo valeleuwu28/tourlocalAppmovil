@@ -19,17 +19,20 @@ import useApi from "../../hooks/useApi";
 import { colors } from "../../theme/colors";
 import { getSession } from "../../utils/storage";
 
-export default function ConfirmReservationScreen() {
+export default function ConfirmReservationScreen({ navigation, route }) {
   const router = useRouter();
   const params = useLocalSearchParams();
+  const routeParams = route?.params || {};
 
   const destinoId = Array.isArray(params.destinoId)
     ? params.destinoId[0]
-    : params.destinoId;
-  const fecha = Array.isArray(params.fecha) ? params.fecha[0] : params.fecha;
+    : params.destinoId || routeParams.destinoId;
+  const fecha = Array.isArray(params.fecha)
+    ? params.fecha[0]
+    : params.fecha || routeParams.fecha;
   const horario = Array.isArray(params.horario)
     ? params.horario[0]
-    : params.horario;
+    : params.horario || routeParams.horario;
 
   // Traer nombre y precio real del destino desde la API
   const { data: destino, loading: loadingDestino } = useApi(
@@ -96,17 +99,28 @@ export default function ConfirmReservationScreen() {
 
       const reservaCreada = data.reserva || data.data || data;
 
-      router.replace({
-        pathname: "/success",
-        params: {
+      if (navigation && typeof navigation.replace === "function") {
+        navigation.replace("Success", {
           codigo: reservaCreada.codigo || `TL-${reservaCreada.id || "0001"}`,
           experiencia: reservaCreada.experiencia || experiencia,
           fecha: reservaCreada.fecha || fecha,
           horario: reservaCreada.horario || horario,
           participantes: String(reservaCreada.participantes || participantes),
           total: String(reservaCreada.total ?? total),
-        },
-      });
+        });
+      } else {
+        router.replace({
+          pathname: "/success",
+          params: {
+            codigo: reservaCreada.codigo || `TL-${reservaCreada.id || "0001"}`,
+            experiencia: reservaCreada.experiencia || experiencia,
+            fecha: reservaCreada.fecha || fecha,
+            horario: reservaCreada.horario || horario,
+            participantes: String(reservaCreada.participantes || participantes),
+            total: String(reservaCreada.total ?? total),
+          },
+        });
+      }
     } catch (err) {
       const msg = err.message || "Error de conexión con el servidor.";
       setError(msg);

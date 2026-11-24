@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { colors } from "../../theme/colors";
+import { isTourPast } from "../../utils/dateUtils";
 
 const STATUS_STYLES = {
   confirmada: { bg: "#CCFBF1", text: "#0F766E", label: "Confirmada" },
@@ -17,8 +18,19 @@ export default function ReservationCard({
   if (!reserva) return null;
 
   const estadoKey = (reserva.estado || "confirmada").toLowerCase();
-  const status = STATUS_STYLES[estadoKey] || STATUS_STYLES.confirmada;
-  const canCancel = estadoKey === "confirmada" || estadoKey === "pendiente";
+  const tourPasado = isTourPast(reserva.fecha, reserva.horario);
+
+  // Si la fecha ya pasó y no estaba cancelada, visualmente es finalizada
+  const status =
+    estadoKey === "cancelada"
+      ? STATUS_STYLES.cancelada
+      : tourPasado
+        ? STATUS_STYLES.finalizada
+        : STATUS_STYLES[estadoKey] || STATUS_STYLES.confirmada;
+
+  // Solo se puede cancelar si está confirmada/pendiente Y la fecha NO ha pasado
+  const canCancel =
+    (estadoKey === "confirmada" || estadoKey === "pendiente") && !tourPasado;
 
   return (
     <View style={styles.card}>
@@ -65,7 +77,7 @@ export default function ReservationCard({
           </Text>
         </View>
 
-        {canCancel && onCancel && (
+        {canCancel && onCancel ? (
           <Pressable
             style={[styles.cancelBtn, canceling && styles.cancelBtnDisabled]}
             onPress={() => onCancel(reserva)}
@@ -76,7 +88,12 @@ export default function ReservationCard({
               {canceling ? "Cancelando..." : "Cancelar reserva"}
             </Text>
           </Pressable>
-        )}
+        ) : tourPasado && estadoKey !== "cancelada" ? (
+          <View style={styles.concludedBadge}>
+            <Ionicons name="checkmark-done" size={14} color="#64748B" style={{ marginRight: 4 }} />
+            <Text style={styles.concludedText}>Tour concluido</Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -104,30 +121,29 @@ const styles = StyleSheet.create({
   },
   code: {
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "600",
     color: colors.muted,
-    letterSpacing: 0.5,
   },
   badge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 8,
   },
   badgeText: {
-    fontSize: 11,
-    fontWeight: "700",
+    fontSize: 12,
+    fontWeight: "600",
   },
   title: {
     fontSize: 16,
-    fontWeight: "800",
+    fontWeight: "700",
     color: colors.text,
     marginBottom: 10,
   },
   metaRow: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 6,
     gap: 6,
-    marginBottom: 5,
   },
   metaText: {
     fontSize: 13,
@@ -148,24 +164,39 @@ const styles = StyleSheet.create({
   },
   totalValue: {
     fontSize: 16,
-    fontWeight: "800",
+    fontWeight: "700",
     color: colors.primary,
   },
   cancelBtn: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 5,
-    backgroundColor: "#FEE2E2",
+    paddingVertical: 6,
     paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FECACA",
+    backgroundColor: "#FEF2F2",
+    gap: 4,
   },
   cancelBtnDisabled: {
     opacity: 0.6,
   },
   cancelBtnText: {
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: 13,
+    fontWeight: "600",
     color: "#B91C1C",
+  },
+  concludedBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: "#F1F5F9",
+  },
+  concludedText: {
+    fontSize: 12,
+    color: "#64748B",
+    fontWeight: "600",
   },
 });

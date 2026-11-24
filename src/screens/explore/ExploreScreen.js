@@ -33,7 +33,7 @@ const CATEGORIES = [
  * Muestra el catálogo de destinos turísticos obtenidos en tiempo real de la API REST / SQLite.
  * Incluye encabezado, buscador en vivo, filtros por categorías, estados de carga y error.
  */
-export default function ExploreScreen() {
+export default function ExploreScreen({ navigation }) {
   const router = useRouter();
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [searchQuery, setSearchQuery] = useState('');
@@ -77,13 +77,20 @@ export default function ExploreScreen() {
   }, [destinos, searchQuery]);
 
   const handleCardPress = (destino) => {
-    router.push({
-      pathname: '/place-detail',
-      params: {
+    if (navigation && typeof navigation.navigate === 'function') {
+      navigation.navigate('PlaceDetail', {
         id: String(destino.id),
         destino: JSON.stringify(destino),
-      },
-    });
+      });
+    } else {
+      router.push({
+        pathname: '/place-detail',
+        params: {
+          id: String(destino.id),
+          destino: JSON.stringify(destino),
+        },
+      });
+    }
   };
 
   return (
