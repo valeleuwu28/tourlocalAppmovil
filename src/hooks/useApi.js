@@ -21,10 +21,15 @@ export default function useApi(endpoint, options = {}) {
 
   // Serializar opciones para evitar re-renders infinitos
   const optionsRef = useRef(options);
-  optionsRef.current = options;
+  useEffect(() => {
+    optionsRef.current = options;
+  }, [options]);
 
   const fetchData = useCallback(async () => {
     if (!endpoint) return;
+
+    await Promise.resolve();
+    if (!isMountedRef.current) return;
 
     // Abortar petición previa si todavía está pendiente
     if (abortControllerRef.current) {
@@ -77,7 +82,10 @@ export default function useApi(endpoint, options = {}) {
         throw new Error(errorMsg);
       }
 
-      if (isMountedRef.current) {
+      if (
+        isMountedRef.current &&
+        abortControllerRef.current === controller
+      ) {
         setData(result);
         setError(null);
       }
@@ -85,24 +93,34 @@ export default function useApi(endpoint, options = {}) {
       // Ignorar errores provocados por la cancelación voluntaria
       if (err.name === "AbortError") return;
 
-      if (isMountedRef.current) {
+      if (
+        isMountedRef.current &&
+        abortControllerRef.current === controller
+      ) {
         setError(err.message || "Error de conexión con el servidor");
       }
     } finally {
-      if (isMountedRef.current) {
+      if (
+        isMountedRef.current &&
+        abortControllerRef.current === controller
+      ) {
         setLoading(false);
       }
     }
   }, [endpoint]);
 
   useEffect(() => {
+    let active = true;
     isMountedRef.current = true;
 
     if (options.immediate !== false) {
-      fetchData();
+      Promise.resolve().then(() => {
+        if (active) fetchData();
+      });
     }
 
     return () => {
+      active = false;
       isMountedRef.current = false;
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();

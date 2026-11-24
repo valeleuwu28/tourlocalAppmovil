@@ -1,56 +1,27 @@
-# Welcome to your Expo app 👋
+# TourLocal · App Móvil
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Aplicación móvil para explorar destinos turísticos en La Paz, agendar visitas con guías locales y gestionar reservas de forma rápida y segura.
 
-## Get started
+## Cómo ejecutar
 
-1. Install dependencies
+1. Encender la API del proyecto web: `cd backend` y `npm run dev`
+2. En esta carpeta (móvil): `npm install`
+3. En `src/config.js` poner la IPv4 de la computadora (obtenida con `ipconfig`)
+4. `npx expo start` y escanear el QR con la app Expo Go
 
-   ```bash
-   npm install
-   ```
+## ¿Por qué React Native?
 
-2. Start the app
+Utilizamos React Native con Expo porque nuestro proyecto web ya estaba desarrollado en JavaScript y React, lo que nos permitió reutilizar la lógica de negocio, los estados y la estructura de componentes. Además, Expo facilita las pruebas en el celular sin necesidad de configurar entornos nativos complejos como Android Studio o Xcode. No elegimos Flutter porque implicaba aprender un nuevo lenguaje (Dart) desde cero.
 
-   ```bash
-   npx expo start
-   ```
+## Flujo
 
-In the output, you'll find options to open the app in a
+Login → Explorar destinos → Detalle del lugar → Agendar visita → Confirmar reserva → Historial → Cancelar reserva → Perfil
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Equipo y aportes
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+| Integrante       | Cuenta de GitHub | Pantallas / Componentes                                                 | Funciones especiales / API                                         |
+| ---------------- | ---------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| Valentina Bravo  | ValentinaBravoF  | Login, Registro, Perfil, EditProfile, Navegación                        | Persistencia de sesión con AsyncStorage, Configuración de API      |
+| Esther Daza      | CrisDaz          | ExploreScreen, PlaceDetailScreen, CategoryPill                          | Hook useApi, Consumo de GET /api/destinos                          |
+| Naomi Flores     | Naomi Flores     | ScheduleScreen, RateExperienceScreen, DateField                         | Calendario nativo, Selección de horarios, POST /api/calificaciones |
+| Andrea Guachalla | Andrea Guachalla | ConfirmReservationScreen, SuccessScreen, HistoryScreen, ReservationCard | POST /api/reservas, DELETE /api/reservas/:id, Lógica de reservas   |
