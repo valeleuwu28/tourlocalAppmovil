@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { API_URL } from "../config";
+import { getApiBaseUrl, API_URL } from "../config";
 
 /**
  * Hook personalizado useApi (Módulo Esther Daza)
@@ -39,10 +39,11 @@ export default function useApi(endpoint, options = {}) {
         setError(null);
       }
 
-      // Construir la URL completa
+      // Construir la URL completa con la IP dinámica resuelta
+      const baseUrl = getApiBaseUrl() || API_URL;
       let url = endpoint.startsWith("http")
         ? endpoint
-        : `${API_URL}${endpoint}`;
+        : `${baseUrl}${endpoint}`;
 
       // Si se envían params como objeto, concatenarlos como query string
       const currentOptions = optionsRef.current || {};

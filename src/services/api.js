@@ -1,33 +1,38 @@
-import { API_URL } from '../config';
+import { getApiBaseUrl, API_URL } from '../config';
 
 /**
  * Servicio centralizado para peticiones a la API REST de TourLocal
  */
+
+function getUrl(path) {
+  const base = getApiBaseUrl() || API_URL;
+  return `${base}${path}`;
+}
 
 export async function getDestinos(categoria = 'Todos') {
   const query =
     categoria && categoria !== 'Todos'
       ? `?categoria=${encodeURIComponent(categoria)}`
       : '';
-  const res = await fetch(`${API_URL}/api/destinos${query}`);
+  const res = await fetch(getUrl(`/api/destinos${query}`));
   if (!res.ok) throw new Error('Error al obtener destinos');
   return res.json();
 }
 
 export async function getDestinoById(id) {
-  const res = await fetch(`${API_URL}/api/destinos/${id}`);
+  const res = await fetch(getUrl(`/api/destinos/${id}`));
   if (!res.ok) throw new Error('Error al obtener detalle del destino');
   return res.json();
 }
 
 export async function getHorarios() {
-  const res = await fetch(`${API_URL}/api/horarios`);
+  const res = await fetch(getUrl('/api/horarios'));
   if (!res.ok) throw new Error('Error al obtener horarios');
   return res.json();
 }
 
 export async function getReservas(userId, token) {
-  const res = await fetch(`${API_URL}/api/reservas`, {
+  const res = await fetch(getUrl('/api/reservas'), {
     headers: {
       'Content-Type': 'application/json',
       'X-User-Id': String(userId || '1'),
@@ -39,7 +44,7 @@ export async function getReservas(userId, token) {
 }
 
 export async function createReserva(reservaData, userId, token) {
-  const res = await fetch(`${API_URL}/api/reservas`, {
+  const res = await fetch(getUrl('/api/reservas'), {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -56,7 +61,7 @@ export async function createReserva(reservaData, userId, token) {
 }
 
 export async function cancelReserva(id, userId, token) {
-  const res = await fetch(`${API_URL}/api/reservas/${id}`, {
+  const res = await fetch(getUrl(`/api/reservas/${id}`), {
     method: 'DELETE',
     headers: {
       'X-User-Id': String(userId || '1'),
@@ -68,7 +73,7 @@ export async function cancelReserva(id, userId, token) {
 }
 
 export async function getGuardados(userId) {
-  const res = await fetch(`${API_URL}/api/guardados`, {
+  const res = await fetch(getUrl('/api/guardados'), {
     headers: {
       'Content-Type': 'application/json',
       'X-User-Id': String(userId || '1'),
@@ -81,8 +86,8 @@ export async function getGuardados(userId) {
 export async function toggleGuardado(id, isSaved, userId) {
   const method = isSaved ? 'DELETE' : 'POST';
   const url = isSaved
-    ? `${API_URL}/api/guardados/${id}`
-    : `${API_URL}/api/guardados`;
+    ? getUrl(`/api/guardados/${id}`)
+    : getUrl('/api/guardados');
 
   const res = await fetch(url, {
     method,

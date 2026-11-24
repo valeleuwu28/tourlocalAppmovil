@@ -1,15 +1,66 @@
 import { Platform } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Tu IP local Wi-Fi para pruebas en el celular físico con Expo Go y APK
-const LOCAL_IP = '192.168.0.37';
+// IP local predeterminada cuando compartes señal desde el celular (Hotspot)
+export const DEFAULT_LOCAL_IP = '10.191.47.44';
 
-// Si pruebas en navegador web usa localhost; en celular usa tu IP Wi-Fi
-export const API_URL =
-  process.env.EXPO_PUBLIC_API_URL ||
-  (Platform.OS === 'web'
-    ? 'http://localhost:3000'
-    : `http://${LOCAL_IP}:3000`);
+let activeIp = DEFAULT_LOCAL_IP;
+
+// Cargar IP personalizada persistente al iniciar
+AsyncStorage.getItem('CUSTOM_SERVER_IP')
+  .then((stored) => {
+    if (stored && stored.trim()) {
+      activeIp = stored.trim();
+    }
+  })
+  .catch(() => {});
+
+/**
+ * Obtiene la IP actual configurada
+ */
+export function getCurrentIp() {
+  return activeIp;
+}
+
+/**
+ * Guarda una nueva IP en memoria y en almacenamiento persistente
+ */
+export async function setCustomIp(newIp) {
+  if (!newIp) return;
+  const clean = newIp.trim().replace(/^https?:\/\//i, '').replace(/\/.*$/, '').replace(/:3000$/, '');
+  activeIp = clean;
+  try {
+    await AsyncStorage.setItem('CUSTOM_SERVER_IP', clean);
+  } catch {}
+}
+
+/**
+ * Restablece la IP a la predeterminada
+ */
+export async function resetToDefaultIp() {
+  activeIp = DEFAULT_LOCAL_IP;
+  try {
+    await AsyncStorage.removeItem('CUSTOM_SERVER_IP');
+  } catch {}
+}
+
+/**
+ * Resuelve la URL base de la API según la plataforma y la IP activa
+ */
+export function getApiBaseUrl() {
+  if (Platform.OS === 'web') {
+    return 'http://localhost:3000';
+  }
+  return `http://${activeIp}:3000`;
+}
+
+export const API_URL = getApiBaseUrl();
 
 export default {
+  DEFAULT_LOCAL_IP,
+  getCurrentIp,
+  setCustomIp,
+  resetToDefaultIp,
+  getApiBaseUrl,
   API_URL,
 };
